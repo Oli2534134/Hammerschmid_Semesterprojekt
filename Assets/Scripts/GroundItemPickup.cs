@@ -1,0 +1,162 @@
+using UnityEngine;
+
+public class GroundItemPickup : MonoBehaviour
+{
+    public enum ItemType { None, Weapon, Medical }
+
+    [Header("Item Type")]
+    public ItemType itemType = ItemType.None;
+
+    [Header("Weapon Properties")]
+    public WeaponType weaponType = WeaponType.Melee;
+    public string weaponName = "";
+    public Sprite weaponIcon;
+    public float damage = 10f;
+    public float attackRate = 1f;
+    public float range = 1f;
+    public float heartRateIncrease = 10f;
+    public float meleeAngle = 90f;
+    public float knockback = 2f;
+    public GameObject projectilePrefab;
+    public float projectileSpeed = 10f;
+    public int magazineSize = 10;
+    public float reloadTime = 1.5f;
+
+    [Header("Medical Properties")]
+    public string medicalName = "";
+    public float healingAmount = 25f;
+
+    [Header("Input")]
+    public KeyCode pickupKey = KeyCode.E;
+
+    private bool playerInRange;
+    private PlayerInventory playerInventory;
+    private SpriteRenderer worldSpriteRenderer;
+
+    void Awake()
+    {
+        worldSpriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    void Start()
+    {
+        RefreshVisual();
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        PlayerInventory inventory = other.GetComponent<PlayerInventory>();
+        if (inventory == null) return;
+
+        playerInRange = true;
+        playerInventory = inventory;
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        PlayerInventory inventory = other.GetComponent<PlayerInventory>();
+        if (inventory == null) return;
+
+        if (inventory == playerInventory)
+        {
+            playerInRange = false;
+            playerInventory = null;
+        }
+    }
+
+    void Update()
+    {
+        if (!playerInRange || playerInventory == null) return;
+        if (!Input.GetKeyDown(pickupKey)) return;
+
+        if (itemType == ItemType.Weapon)
+        {
+            var weapon = CreateWeaponData();
+            if (weapon != null)
+            {
+                WeaponData previousEquipped = playerInventory.equippedWeapon;
+                bool dropPreviousEquipped = previousEquipped != null && previousEquipped.weaponType == weapon.weaponType;
+
+                playerInventory.AddWeapon(weapon);
+
+                if (dropPreviousEquipped)
+                {
+                    ApplyWeaponData(previousEquipped);
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }
+            }
+            return;
+        }
+
+        if (itemType == ItemType.Medical)
+        {
+            var medical = CreateMedicalData();
+            if (medical != null)
+            {
+                playerInventory.AddMedicalItem(medical);
+                Destroy(gameObject);
+            }
+        }
+    }
+
+    WeaponData CreateWeaponData()
+    {
+        var weapon = new WeaponData();
+        weapon.weaponName = weaponName;
+        weapon.weaponType = weaponType;
+        weapon.icon = weaponIcon;
+        weapon.damage = damage;
+        weapon.attackRate = attackRate;
+        weapon.range = range;
+        weapon.heartRateIncrease = heartRateIncrease;
+        weapon.meleeAngle = meleeAngle;
+        weapon.knockback = knockback;
+        weapon.projectilePrefab = projectilePrefab;
+        weapon.projectileSpeed = projectileSpeed;
+        weapon.magazineSize = magazineSize;
+        weapon.reloadTime = reloadTime;
+        return weapon;
+    }
+
+    void ApplyWeaponData(WeaponData weapon)
+    {
+        if (weapon == null) return;
+
+        itemType = ItemType.Weapon;
+        weaponType = weapon.weaponType;
+        weaponName = weapon.weaponName;
+        weaponIcon = weapon.icon;
+        damage = weapon.damage;
+        attackRate = weapon.attackRate;
+        range = weapon.range;
+        heartRateIncrease = weapon.heartRateIncrease;
+        meleeAngle = weapon.meleeAngle;
+        knockback = weapon.knockback;
+        projectilePrefab = weapon.projectilePrefab;
+        projectileSpeed = weapon.projectileSpeed;
+        magazineSize = weapon.magazineSize;
+        reloadTime = weapon.reloadTime;
+        RefreshVisual();
+    }
+
+    MedicalItemData CreateMedicalData()
+    {
+        var medical = new MedicalItemData();
+        medical.itemName = medicalName;
+        medical.healingAmount = healingAmount;
+        return medical;
+    }
+
+    void RefreshVisual()
+    {
+        if (worldSpriteRenderer == null) return;
+
+        if (itemType == ItemType.Weapon)
+        {
+            worldSpriteRenderer.sprite = weaponIcon;
+        }
+    }
+}
