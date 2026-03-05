@@ -46,6 +46,7 @@ public class PlayerController : MonoBehaviour
     [Header("Weapon System")]
     [HideInInspector]
     public WeaponData equippedWeapon;
+    public float heldWeaponScale = 2.2f;
     private float lastAttackTime = -Mathf.Infinity;
     private SpriteRenderer weaponSpriteRenderer;
 
@@ -61,8 +62,10 @@ public class PlayerController : MonoBehaviour
         // Create weapon visual child object
         var weaponChild = new GameObject("WeaponVisual");
         weaponChild.transform.SetParent(transform);
-        weaponChild.transform.localPosition = Vector3.zero;
+        weaponChild.transform.localPosition = new Vector3(0.5f, 0, 0);
+        weaponChild.transform.localScale = Vector3.one * heldWeaponScale;
         weaponSpriteRenderer = weaponChild.AddComponent<SpriteRenderer>();
+        weaponSpriteRenderer.sortingOrder = 10;
     }
 
     void Update()

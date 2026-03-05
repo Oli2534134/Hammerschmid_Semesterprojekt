@@ -22,6 +22,7 @@ public class Enemy : MonoBehaviour
     [Range(0f, 1f)]
     public float weaponSpawnChance = 0.7f;
     public GameObject weaponPickupPrefab;
+    public float heldWeaponScale = 2f;
 
     private WeaponData equippedWeapon;
     private PlayerController targetPlayer;
@@ -120,10 +121,9 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
-        if (equippedWeapon != null && weaponPickupPrefab != null)
+        if (equippedWeapon != null)
         {
-            GameObject droppedWeapon = Instantiate(weaponPickupPrefab, transform.position, Quaternion.identity);
-            GroundItemPickup pickup = droppedWeapon.GetComponent<GroundItemPickup>();
+            GroundItemPickup pickup = CreateDropPickup();
             if (pickup != null)
             {
                 pickup.itemType = GroundItemPickup.ItemType.Weapon;
@@ -145,6 +145,35 @@ public class Enemy : MonoBehaviour
 
         Debug.Log("Enemy died!");
         Destroy(gameObject);
+    }
+
+    GroundItemPickup CreateDropPickup()
+    {
+        GameObject dropObject = null;
+
+        if (weaponPickupPrefab != null)
+        {
+            dropObject = Instantiate(weaponPickupPrefab, transform.position, Quaternion.identity);
+            GroundItemPickup prefabPickup = dropObject.GetComponent<GroundItemPickup>();
+            if (prefabPickup != null)
+            {
+                return prefabPickup;
+            }
+
+            Destroy(dropObject);
+        }
+
+        dropObject = new GameObject("DroppedWeaponPickup");
+        dropObject.transform.position = transform.position;
+
+        var spriteRenderer = dropObject.AddComponent<SpriteRenderer>();
+        spriteRenderer.sortingOrder = 1;
+
+        var collider = dropObject.AddComponent<CircleCollider2D>();
+        collider.isTrigger = true;
+        collider.radius = 0.4f;
+
+        return dropObject.AddComponent<GroundItemPickup>();
     }
 
     void EquipRandomWeapon()
@@ -190,7 +219,8 @@ public class Enemy : MonoBehaviour
 
         var weaponChild = new GameObject("EnemyWeaponVisual");
         weaponChild.transform.SetParent(transform);
-        weaponChild.transform.localPosition = Vector3.zero;
+        weaponChild.transform.localPosition = new Vector3(0.35f, 0f, 0f);
+        weaponChild.transform.localScale = Vector3.one * heldWeaponScale;
         weaponSpriteRenderer = weaponChild.AddComponent<SpriteRenderer>();
         weaponSpriteRenderer.sprite = equippedWeapon.icon;
         weaponSpriteRenderer.sortingOrder = 1;

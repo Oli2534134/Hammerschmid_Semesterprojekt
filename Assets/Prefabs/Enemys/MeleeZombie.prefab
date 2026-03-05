@@ -103,10 +103,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 0
   health: 70
-  speed: 2
+  speed: 1
   damage: 3
   attackRange: 1.2
   attackCooldown: 1
+  weaponPool:
+  - {fileID: 504145812631756296, guid: e85f13d5a4cf81547aef2001c511020e, type: 3}
+  weaponSpawnChance: 1
+  weaponPickupPrefab: {fileID: 0}
+  heldWeaponScale: 3.51
 --- !u!70 &3354190598496810936
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

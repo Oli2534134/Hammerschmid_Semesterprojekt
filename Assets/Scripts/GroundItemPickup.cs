@@ -29,6 +29,9 @@ public class GroundItemPickup : MonoBehaviour
     [Header("Input")]
     public KeyCode pickupKey = KeyCode.E;
 
+    [Header("Visual")]
+    public float worldIconScale = 2f;
+
     private bool playerInRange;
     private PlayerInventory playerInventory;
     private SpriteRenderer worldSpriteRenderer;
@@ -36,6 +39,10 @@ public class GroundItemPickup : MonoBehaviour
     void Awake()
     {
         worldSpriteRenderer = GetComponent<SpriteRenderer>();
+        if (worldSpriteRenderer != null)
+        {
+            transform.localScale = Vector3.one * worldIconScale;
+        }
     }
 
     void Start()
