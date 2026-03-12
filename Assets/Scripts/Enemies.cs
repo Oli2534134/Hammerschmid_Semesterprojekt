@@ -34,7 +34,7 @@ public class Enemy : MonoBehaviour
         SetupEnemy();
         targetPlayer = FindFirstObjectByType<PlayerController>();
         EquipRandomWeapon();
-        SetupWeaponVisual();
+
     }
 
     void Update()
@@ -211,18 +211,5 @@ public class Enemy : MonoBehaviour
         equippedWeapon.projectileSpeed = randomPickup.projectileSpeed;
         equippedWeapon.magazineSize = randomPickup.magazineSize;
         equippedWeapon.reloadTime = randomPickup.reloadTime;
-    }
-
-    void SetupWeaponVisual()
-    {
-        if (equippedWeapon == null) return;
-
-        var weaponChild = new GameObject("EnemyWeaponVisual");
-        weaponChild.transform.SetParent(transform);
-        weaponChild.transform.localPosition = new Vector3(0.35f, 0f, 0f);
-        weaponChild.transform.localScale = Vector3.one * heldWeaponScale;
-        weaponSpriteRenderer = weaponChild.AddComponent<SpriteRenderer>();
-        weaponSpriteRenderer.sprite = equippedWeapon.icon;
-        weaponSpriteRenderer.sortingOrder = 1;
     }
 }
