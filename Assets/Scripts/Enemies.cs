@@ -138,6 +138,7 @@ public class Enemy : MonoBehaviour
                 pickup.knockback = equippedWeapon.knockback;
                 pickup.projectilePrefab = equippedWeapon.projectilePrefab;
                 pickup.projectileSpeed = equippedWeapon.projectileSpeed;
+                pickup.ammoType = equippedWeapon.ammoType;
                 pickup.magazineSize = equippedWeapon.magazineSize;
                 pickup.reloadTime = equippedWeapon.reloadTime;
             }
@@ -209,6 +210,7 @@ public class Enemy : MonoBehaviour
         equippedWeapon.knockback = randomPickup.knockback;
         equippedWeapon.projectilePrefab = randomPickup.projectilePrefab;
         equippedWeapon.projectileSpeed = randomPickup.projectileSpeed;
+        equippedWeapon.ammoType = randomPickup.ammoType;
         equippedWeapon.magazineSize = randomPickup.magazineSize;
         equippedWeapon.reloadTime = randomPickup.reloadTime;
     }

@@ -13,14 +13,21 @@ public class GroundItemPickup : MonoBehaviour
     public Sprite weaponIcon;
     public float damage = 10f;
     public float attackRate = 1f;
+    public float fireCooldown = 0.2f;
     public float range = 1f;
     public float heartRateIncrease = 10f;
     public float meleeAngle = 90f;
     public float knockback = 2f;
     public GameObject projectilePrefab;
     public float projectileSpeed = 10f;
+    public AmmoType ammoType = AmmoType.Small;
     public int magazineSize = 10;
     public float reloadTime = 1.5f;
+
+    [Header("Ammo Reserves")]
+    public int smallAmmoReserve = 60;
+    public int mediumAmmoReserve = 40;
+    public int bigAmmoReserve = 20;
 
     [Header("Medical Properties")]
     public string medicalName = "";
@@ -117,14 +124,22 @@ public class GroundItemPickup : MonoBehaviour
         weapon.icon = weaponIcon;
         weapon.damage = damage;
         weapon.attackRate = attackRate;
+        weapon.fireCooldown = fireCooldown;
         weapon.range = range;
         weapon.heartRateIncrease = heartRateIncrease;
         weapon.meleeAngle = meleeAngle;
         weapon.knockback = knockback;
         weapon.projectilePrefab = projectilePrefab;
         weapon.projectileSpeed = projectileSpeed;
+        weapon.ammoType = ammoType;
         weapon.magazineSize = magazineSize;
         weapon.reloadTime = reloadTime;
+        switch (ammoType)
+        {
+            case AmmoType.Small:  weapon.totalAmmo = smallAmmoReserve;  break;
+            case AmmoType.Medium: weapon.totalAmmo = mediumAmmoReserve; break;
+            case AmmoType.Big:    weapon.totalAmmo = bigAmmoReserve;    break;
+        }
         return weapon;
     }
 
@@ -138,14 +153,22 @@ public class GroundItemPickup : MonoBehaviour
         weaponIcon = weapon.icon;
         damage = weapon.damage;
         attackRate = weapon.attackRate;
+        fireCooldown = weapon.fireCooldown;
         range = weapon.range;
         heartRateIncrease = weapon.heartRateIncrease;
         meleeAngle = weapon.meleeAngle;
         knockback = weapon.knockback;
         projectilePrefab = weapon.projectilePrefab;
         projectileSpeed = weapon.projectileSpeed;
+        ammoType = weapon.ammoType;
         magazineSize = weapon.magazineSize;
         reloadTime = weapon.reloadTime;
+        switch (weapon.ammoType)
+        {
+            case AmmoType.Small:  smallAmmoReserve  = weapon.totalAmmo; break;
+            case AmmoType.Medium: mediumAmmoReserve = weapon.totalAmmo; break;
+            case AmmoType.Big:    bigAmmoReserve    = weapon.totalAmmo; break;
+        }
         RefreshVisual();
     }
 

@@ -4,6 +4,14 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
+    public enum FacingDirection
+    {
+        Up,
+        Down,
+        Left,
+        Right
+    }
+
     [Header("Movement")]
     public float moveSpeed = 5f;
     public float sprintMultiplier = 1.8f;
@@ -46,7 +54,16 @@ public class PlayerController : MonoBehaviour
     [Header("Weapon System")]
     [HideInInspector]
     public WeaponData equippedWeapon;
+    public TextMeshProUGUI bulletsText;
+    public TextMeshProUGUI reloadText;
+    public float rangedAimConeAngle = 70f;
+    public float projectileSpawnOffset = 0.45f;
     private float lastAttackTime = -Mathf.Infinity;
+    private int currentAmmo = 0;
+    private int currentTotalAmmo = 0;
+    private bool isReloading = false;
+    private float reloadEndTime = 0f;
+    private FacingDirection facingDirection = FacingDirection.Down;
 
     private PlayerInventory inventory;
 
@@ -68,10 +85,14 @@ public class PlayerController : MonoBehaviour
 
         isMoving = moveInput.magnitude > 0.1f;
         isSprinting = isMoving && Input.GetKey(KeyCode.LeftShift);
+        UpdateFacingDirection();
+        HandleReloadTimer();
 
         HandleAttackInput();
         UpdateHeartRate();
         UpdateSpeedMultiplier();
+        UpdateBulletsUI();
+        UpdateReloadUI();
 
         if (currentHeartRate >= maxHeartRate)
         {
@@ -153,13 +174,33 @@ public class PlayerController : MonoBehaviour
 
     public void SetEquippedWeapon(WeaponData weapon)
     {
+        if (equippedWeapon != null)
+            equippedWeapon.totalAmmo = currentTotalAmmo;
+
         equippedWeapon = weapon;
+        if (equippedWeapon != null && equippedWeapon.weaponType == WeaponType.Ranged)
+        {
+            currentAmmo = equippedWeapon.magazineSize;
+            currentTotalAmmo = equippedWeapon.totalAmmo;
+            isReloading = false;
+        }
+        else
+        {
+            currentAmmo = 0;
+            currentTotalAmmo = 0;
+            isReloading = false;
+        }
     }
 
     void HandleAttackInput()
     {
         if (equippedWeapon == null) return;
         if (isDead) return;
+
+        if (equippedWeapon.weaponType == WeaponType.Ranged && Input.GetKeyDown(KeyCode.R))
+        {
+            StartReload();
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -169,7 +210,13 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
-        if (Time.time - lastAttackTime < (1f / equippedWeapon.attackRate)) return;
+        if (equippedWeapon.weaponType == WeaponType.Ranged)
+        {
+            if (isReloading) return;
+            if (currentAmmo <= 0) return;
+        }
+
+        if (Time.time - lastAttackTime < equippedWeapon.fireCooldown) return;
         lastAttackTime = Time.time;
 
         currentHeartRate += equippedWeapon.heartRateIncrease;
@@ -216,17 +263,137 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        Vector2 mousePos = Input.mousePosition;
-        Vector2 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
-        Vector2 direction = (worldPos - (Vector2)transform.position).normalized;
+        Vector2 shootDirection;
+        if (!TryGetShootDirection(out shootDirection))
+        {
+            return;
+        }
 
-        GameObject projectile = Instantiate(equippedWeapon.projectilePrefab, transform.position, Quaternion.identity);
+        currentAmmo = Mathf.Max(0, currentAmmo - 1);
+
+        Vector3 spawnPosition = transform.position + (Vector3)(shootDirection * projectileSpawnOffset);
+        GameObject projectile = Instantiate(equippedWeapon.projectilePrefab, spawnPosition, Quaternion.identity);
         Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
         if (projRb != null)
         {
-            projRb.linearVelocity = direction * equippedWeapon.projectileSpeed;
+            projRb.linearVelocity = shootDirection * equippedWeapon.projectileSpeed;
         }
 
-        Debug.Log($"Ranged attack! Projectile fired toward {direction}");
+        Bullets bullet = projectile.GetComponent<Bullets>();
+        if (bullet != null)
+        {
+            bullet.SetOwner(gameObject);
+            bullet.bulletType = Bullets.BulletType.Player;
+            bullet.bulletDamage = equippedWeapon.damage;
+            bullet.bulletSpeed = equippedWeapon.projectileSpeed;
+            bullet.ammoType = equippedWeapon.ammoType;
+            bullet.SetDirection(shootDirection);
+            bullet.IgnoreShooterColliders(GetComponentsInChildren<Collider2D>());
+        }
+
+        Debug.Log($"Ranged attack! Projectile fired toward {shootDirection}");
+    }
+
+    void UpdateFacingDirection()
+    {
+        if (moveInput.sqrMagnitude < 0.01f) return;
+
+        if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
+        {
+            facingDirection = moveInput.x > 0f ? FacingDirection.Right : FacingDirection.Left;
+        }
+        else
+        {
+            facingDirection = moveInput.y > 0f ? FacingDirection.Up : FacingDirection.Down;
+        }
+    }
+
+    Vector2 GetFacingVector()
+    {
+        switch (facingDirection)
+        {
+            case FacingDirection.Up:
+                return Vector2.up;
+            case FacingDirection.Down:
+                return Vector2.down;
+            case FacingDirection.Left:
+                return Vector2.left;
+            case FacingDirection.Right:
+                return Vector2.right;
+            default:
+                return Vector2.down;
+        }
+    }
+
+    bool TryGetShootDirection(out Vector2 shootDirection)
+    {
+        shootDirection = Vector2.zero;
+        if (Camera.main == null) return false;
+
+        Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 toMouse = worldPos - (Vector2)transform.position;
+        if (toMouse.sqrMagnitude < 0.0001f) return false;
+
+        Vector2 candidateDirection = toMouse.normalized;
+        Vector2 facingVector = GetFacingVector();
+        float angle = Vector2.Angle(facingVector, candidateDirection);
+        if (angle > rangedAimConeAngle * 0.5f) return false;
+
+        shootDirection = candidateDirection;
+        return true;
+    }
+
+    void StartReload()
+    {
+        if (equippedWeapon == null) return;
+        if (equippedWeapon.weaponType != WeaponType.Ranged) return;
+        if (isReloading) return;
+        if (currentAmmo >= equippedWeapon.magazineSize) return;
+        if (currentTotalAmmo <= 0) return;
+
+        isReloading = true;
+        reloadEndTime = Time.time + Mathf.Max(0f, equippedWeapon.reloadTime);
+    }
+
+    void HandleReloadTimer()
+    {
+        if (!isReloading) return;
+        if (Time.time < reloadEndTime) return;
+
+        isReloading = false;
+        if (equippedWeapon != null && equippedWeapon.weaponType == WeaponType.Ranged)
+        {
+            int needed = equippedWeapon.magazineSize - currentAmmo;
+            int canLoad = Mathf.Min(needed, currentTotalAmmo);
+            currentAmmo += canLoad;
+            currentTotalAmmo -= canLoad;
+        }
+    }
+
+    void UpdateBulletsUI()
+    {
+        if (bulletsText == null) return;
+
+        if (equippedWeapon == null || equippedWeapon.weaponType != WeaponType.Ranged)
+        {
+            bulletsText.text = "";
+            return;
+        }
+
+        bulletsText.text = $"{currentAmmo}/{equippedWeapon.magazineSize} | {currentTotalAmmo}";
+    }
+
+    void UpdateReloadUI()
+    {
+        if (reloadText == null) return;
+
+        if (!isReloading)
+        {
+            reloadText.text = "";
+            return;
+        }
+
+        float remaining = Mathf.Max(0f, reloadEndTime - Time.time);
+        reloadText.text = $"Reloading... {remaining:F1}s";
     }
 }
