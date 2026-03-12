@@ -46,9 +46,7 @@ public class PlayerController : MonoBehaviour
     [Header("Weapon System")]
     [HideInInspector]
     public WeaponData equippedWeapon;
-    public float heldWeaponScale = 2.2f;
     private float lastAttackTime = -Mathf.Infinity;
-    private SpriteRenderer weaponSpriteRenderer;
 
     private PlayerInventory inventory;
 
@@ -58,14 +56,6 @@ public class PlayerController : MonoBehaviour
         currentHeartRate = restingHeartRate;
         currentHeartHealth = Mathf.Clamp(currentHeartHealth, 0f, maxHeartHealth);
         inventory = GetComponent<PlayerInventory>();
-
-        // Create weapon visual child object
-        var weaponChild = new GameObject("WeaponVisual");
-        weaponChild.transform.SetParent(transform);
-        weaponChild.transform.localPosition = new Vector3(0.5f, 0, 0);
-        weaponChild.transform.localScale = Vector3.one * heldWeaponScale;
-        weaponSpriteRenderer = weaponChild.AddComponent<SpriteRenderer>();
-        weaponSpriteRenderer.sortingOrder = 10;
     }
 
     void Update()
@@ -164,11 +154,6 @@ public class PlayerController : MonoBehaviour
     public void SetEquippedWeapon(WeaponData weapon)
     {
         equippedWeapon = weapon;
-        if (weaponSpriteRenderer != null)
-        {
-            weaponSpriteRenderer.sprite = weapon != null ? weapon.icon : null;
-            weaponSpriteRenderer.enabled = weaponSpriteRenderer.sprite != null;
-        }
     }
 
     void HandleAttackInput()
