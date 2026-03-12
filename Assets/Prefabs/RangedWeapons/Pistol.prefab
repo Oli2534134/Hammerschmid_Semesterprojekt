@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &488841160540724886
+--- !u!1 &7522914497523477074
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,39 +8,39 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8304325217463982542}
-  - component: {fileID: 4429865633591150661}
-  - component: {fileID: 4669629983452128836}
-  - component: {fileID: -6113948090964971602}
+  - component: {fileID: 3496345486193305844}
+  - component: {fileID: 2465725488528403755}
+  - component: {fileID: 961567699107444205}
+  - component: {fileID: 3328654994423420684}
   m_Layer: 0
-  m_Name: GuteMedizin
+  m_Name: Pistol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8304325217463982542
+--- !u!4 &3496345486193305844
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 488841160540724886}
+  m_GameObject: {fileID: 7522914497523477074}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.585, y: -2.3647, z: 0}
-  m_LocalScale: {x: 0.3843, y: 0.3843, z: 1}
+  m_LocalPosition: {x: -4.8238, y: -0.3396, z: 0}
+  m_LocalScale: {x: 0.17221686, y: 1.3408223, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &4429865633591150661
+--- !u!212 &2465725488528403755
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 488841160540724886}
+  m_GameObject: {fileID: 7522914497523477074}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -89,48 +89,48 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &4669629983452128836
+--- !u!114 &961567699107444205
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 488841160540724886}
+  m_GameObject: {fileID: 7522914497523477074}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 466dad4ca10d249469761b0a8c847f9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemType: 2
-  weaponType: 0
-  weaponName: 
-  weaponIcon: {fileID: 0}
-  damage: 10
-  attackRate: 1
+  itemType: 1
+  weaponType: 1
+  weaponName: Pistol
+  weaponIcon: {fileID: -1171790437229086565, guid: f9ee1ea7a490fba4280fab6162ba59d5, type: 3}
+  damage: 12
+  attackRate: 0.3
   fireCooldown: 0.2
   range: 1
-  heartRateIncrease: 0
+  heartRateIncrease: 2
   meleeAngle: 90
   knockback: 2
-  projectilePrefab: {fileID: 0}
-  projectileSpeed: 10
+  projectilePrefab: {fileID: 4243843779626593235, guid: c1c11cb11b8a0bf4aa7d1ec57bb301df, type: 3}
+  projectileSpeed: 30
   ammoType: 0
   magazineSize: 10
   reloadTime: 1.5
   smallAmmoReserve: 60
   mediumAmmoReserve: 40
   bigAmmoReserve: 20
-  medicalName: Garlic
-  healingAmount: 41
+  medicalName: 
+  healingAmount: 25
   pickupKey: 101
-  worldIconScale: 2
---- !u!58 &-6113948090964971602
-CircleCollider2D:
+  worldIconScale: 0.24
+--- !u!61 &3328654994423420684
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 488841160540724886}
+  m_GameObject: {fileID: 7522914497523477074}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -159,4 +159,14 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.50000006
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0

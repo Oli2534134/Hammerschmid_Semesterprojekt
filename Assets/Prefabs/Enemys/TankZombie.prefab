@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2083494110080480584}
   m_Layer: 0
   m_Name: TankZombie
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -108,9 +108,10 @@ MonoBehaviour:
   attackRange: 1
   attackCooldown: 3
   weaponPool: []
-  weaponSpawnChance: 0.7
+  weaponSpawnChance: 0
   weaponPickupPrefab: {fileID: 0}
   heldWeaponScale: 3.5
+  randomItemDrops: []
 --- !u!70 &2083494110080480584
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

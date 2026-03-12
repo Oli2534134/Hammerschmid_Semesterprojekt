@@ -60,6 +60,10 @@ public class GroundItemPickup : MonoBehaviour
     void OnTriggerEnter2D(Collider2D other)
     {
         PlayerInventory inventory = other.GetComponent<PlayerInventory>();
+        if (inventory == null)
+        {
+            inventory = other.GetComponentInParent<PlayerInventory>();
+        }
         if (inventory == null) return;
 
         playerInRange = true;
@@ -69,6 +73,10 @@ public class GroundItemPickup : MonoBehaviour
     void OnTriggerExit2D(Collider2D other)
     {
         PlayerInventory inventory = other.GetComponent<PlayerInventory>();
+        if (inventory == null)
+        {
+            inventory = other.GetComponentInParent<PlayerInventory>();
+        }
         if (inventory == null) return;
 
         if (inventory == playerInventory)
@@ -88,14 +96,20 @@ public class GroundItemPickup : MonoBehaviour
             var weapon = CreateWeaponData();
             if (weapon != null)
             {
-                WeaponData previousEquipped = playerInventory.equippedWeapon;
-                bool dropPreviousEquipped = previousEquipped != null && previousEquipped.weaponType == weapon.weaponType;
+                WeaponData previousSameType = weapon.weaponType == WeaponType.Melee
+                    ? playerInventory.meleeSlot
+                    : playerInventory.rangedSlot;
+                bool dropPreviousWeapon = previousSameType != null;
+                if (dropPreviousWeapon && previousSameType.weaponName == "Fists")
+                {
+                    dropPreviousWeapon = false;
+                }
 
                 playerInventory.AddWeapon(weapon);
 
-                if (dropPreviousEquipped)
+                if (dropPreviousWeapon)
                 {
-                    ApplyWeaponData(previousEquipped);
+                    ApplyWeaponData(previousSameType);
                 }
                 else
                 {
@@ -113,6 +127,7 @@ public class GroundItemPickup : MonoBehaviour
                 playerInventory.AddMedicalItem(medical);
                 Destroy(gameObject);
             }
+            
         }
     }
 

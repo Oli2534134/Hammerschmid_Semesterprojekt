@@ -20,12 +20,33 @@ public class PlayerInventory : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            EquipWeapon(meleeSlot);
+            if (meleeSlot != null)
+            {
+                EquipWeapon(meleeSlot);
+            }
+            else if (playerController != null)
+            {
+                EquipWeapon(playerController.GetFallbackMeleeWeapon());
+            }
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             EquipWeapon(rangedSlot);
         }
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            ConsumeMedicalItem();
+        }
+    }
+
+    void ConsumeMedicalItem()
+    {
+        if (medicalSlot == null) return;
+        if (playerController == null) return;
+
+        playerController.Heal(medicalSlot.healingAmount);
+        medicalSlot = null;
     }
 
     public void AddMedicalItem(MedicalItemData item)

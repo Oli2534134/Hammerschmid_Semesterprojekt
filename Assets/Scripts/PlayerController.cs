@@ -54,6 +54,14 @@ public class PlayerController : MonoBehaviour
     [Header("Weapon System")]
     [HideInInspector]
     public WeaponData equippedWeapon;
+    [Header("Default Fists (Melee)")]
+    public string fistsWeaponName = "Fists";
+    public float fistsDamage = 10f;
+    public float fistsFireCooldown = 0.35f;
+    public float fistsRange = 1.1f;
+    public float fistsHeartRateIncrease = 4f;
+    public float fistsMeleeAngle = 90f;
+    public float fistsKnockback = 1.5f;
     public TextMeshProUGUI bulletsText;
     public TextMeshProUGUI reloadText;
     public float rangedAimConeAngle = 70f;
@@ -64,6 +72,7 @@ public class PlayerController : MonoBehaviour
     private bool isReloading = false;
     private float reloadEndTime = 0f;
     private FacingDirection facingDirection = FacingDirection.Down;
+    private WeaponData fistsWeapon;
 
     private PlayerInventory inventory;
 
@@ -73,6 +82,7 @@ public class PlayerController : MonoBehaviour
         currentHeartRate = restingHeartRate;
         currentHeartHealth = Mathf.Clamp(currentHeartHealth, 0f, maxHeartHealth);
         inventory = GetComponent<PlayerInventory>();
+        RefreshFistsWeaponData();
     }
 
     void Update()
@@ -172,6 +182,13 @@ public class PlayerController : MonoBehaviour
         currentHeartHealth = Mathf.Clamp(currentHeartHealth - amount, 0f, maxHeartHealth);
     }
 
+    public void Heal(float amount)
+    {
+        if (isDead) return;
+        if (amount <= 0f) return;
+        currentHeartHealth = Mathf.Clamp(currentHeartHealth + amount, 0f, maxHeartHealth);
+    }
+
     public void SetEquippedWeapon(WeaponData weapon)
     {
         if (equippedWeapon != null)
@@ -192,8 +209,19 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public WeaponData GetFallbackMeleeWeapon()
+    {
+        RefreshFistsWeaponData();
+        return fistsWeapon;
+    }
+
     void HandleAttackInput()
     {
+        if (equippedWeapon == null)
+        {
+            SetEquippedWeapon(GetFallbackMeleeWeapon());
+        }
+
         if (equippedWeapon == null) return;
         if (isDead) return;
 
@@ -202,10 +230,27 @@ public class PlayerController : MonoBehaviour
             StartReload();
         }
 
-        if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButton(0))
         {
             Attack();
         }
+    }
+
+    void RefreshFistsWeaponData()
+    {
+        if (fistsWeapon == null)
+        {
+            fistsWeapon = new WeaponData();
+        }
+
+        fistsWeapon.weaponName = fistsWeaponName;
+        fistsWeapon.weaponType = WeaponType.Melee;
+        fistsWeapon.damage = fistsDamage;
+        fistsWeapon.fireCooldown = fistsFireCooldown;
+        fistsWeapon.range = fistsRange;
+        fistsWeapon.heartRateIncrease = fistsHeartRateIncrease;
+        fistsWeapon.meleeAngle = fistsMeleeAngle;
+        fistsWeapon.knockback = fistsKnockback;
     }
 
     void Attack()
@@ -214,22 +259,21 @@ public class PlayerController : MonoBehaviour
         {
             if (isReloading) return;
             if (currentAmmo <= 0) return;
+
+            Vector2 shootDirection;
+            if (!TryGetShootDirection(out shootDirection)) return;
+
+            if (Time.time - lastAttackTime < equippedWeapon.fireCooldown) return;
+            lastAttackTime = Time.time;
+            currentHeartRate += equippedWeapon.heartRateIncrease;
+            RangedAttack(shootDirection);
+            return;
         }
 
         if (Time.time - lastAttackTime < equippedWeapon.fireCooldown) return;
         lastAttackTime = Time.time;
-
         currentHeartRate += equippedWeapon.heartRateIncrease;
-
-        switch (equippedWeapon.weaponType)
-        {
-            case WeaponType.Melee:
-                MeleeAttack();
-                break;
-            case WeaponType.Ranged:
-                RangedAttack();
-                break;
-        }
+        MeleeAttack();
     }
 
     void MeleeAttack()
@@ -255,20 +299,13 @@ public class PlayerController : MonoBehaviour
         Debug.Log($"Melee attack! Damage: {equippedWeapon.damage}");
     }
 
-    void RangedAttack()
+    void RangedAttack(Vector2 shootDirection)
     {
         if (equippedWeapon.projectilePrefab == null)
         {
             Debug.LogWarning("Ranged weapon has no projectile prefab!");
             return;
         }
-
-        Vector2 shootDirection;
-        if (!TryGetShootDirection(out shootDirection))
-        {
-            return;
-        }
-
         currentAmmo = Mathf.Max(0, currentAmmo - 1);
 
         Vector3 spawnPosition = transform.position + (Vector3)(shootDirection * projectileSpawnOffset);

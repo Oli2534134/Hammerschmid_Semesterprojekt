@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    [System.Serializable]
+    public class RandomItemDrop
+    {
+        public GroundItemPickup pickupPrefab;
+        [Range(0f, 1f)]
+        public float dropChance = 0.35f;
+    }
+
     public enum EnemyType
     {
         Melee,
@@ -23,6 +31,9 @@ public class Enemy : MonoBehaviour
     public float weaponSpawnChance = 0.7f;
     public GameObject weaponPickupPrefab;
     public float heldWeaponScale = 2f;
+
+    [Header("Random Heal Drops")]
+    public RandomItemDrop[] randomItemDrops;
 
     private WeaponData equippedWeapon;
     private PlayerController targetPlayer;
@@ -121,6 +132,8 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
+        TryDropRandomHealItem();
+
         if (equippedWeapon != null)
         {
             GroundItemPickup pickup = CreateDropPickup();
@@ -146,6 +159,28 @@ public class Enemy : MonoBehaviour
 
         Debug.Log("Enemy died!");
         Destroy(gameObject);
+    }
+
+    void TryDropRandomHealItem()
+    {
+        if (randomItemDrops == null || randomItemDrops.Length == 0) return;
+
+        var validDrops = new System.Collections.Generic.List<GroundItemPickup>();
+        for (int i = 0; i < randomItemDrops.Length; i++)
+        {
+            RandomItemDrop entry = randomItemDrops[i];
+            if (entry == null || entry.pickupPrefab == null) continue;
+            if (entry.pickupPrefab.itemType != GroundItemPickup.ItemType.Medical) continue;
+            if (Random.value <= Mathf.Clamp01(entry.dropChance))
+            {
+                validDrops.Add(entry.pickupPrefab);
+            }
+        }
+
+        if (validDrops.Count == 0) return;
+
+        GroundItemPickup chosen = validDrops[Random.Range(0, validDrops.Count)];
+        Instantiate(chosen.gameObject, transform.position, Quaternion.identity);
     }
 
     GroundItemPickup CreateDropPickup()
