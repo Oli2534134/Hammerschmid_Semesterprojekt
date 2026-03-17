@@ -6,8 +6,6 @@ public class PlayerController : MonoBehaviour
 {
     public enum FacingDirection
     {
-        Up,
-        Down,
         Left,
         Right
     }
@@ -71,7 +69,7 @@ public class PlayerController : MonoBehaviour
     private int currentTotalAmmo = 0;
     private bool isReloading = false;
     private float reloadEndTime = 0f;
-    private FacingDirection facingDirection = FacingDirection.Down;
+    private FacingDirection facingDirection = FacingDirection.Right;
     private WeaponData fistsWeapon;
 
     private PlayerInventory inventory;
@@ -333,50 +331,27 @@ public class PlayerController : MonoBehaviour
 
     void UpdateFacingDirection()
     {
-        if (moveInput.sqrMagnitude < 0.01f) return;
+        if (Mathf.Abs(moveInput.x) < 0.01f) return;
 
-        if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
-        {
-            facingDirection = moveInput.x > 0f ? FacingDirection.Right : FacingDirection.Left;
-        }
-        else
-        {
-            facingDirection = moveInput.y > 0f ? FacingDirection.Up : FacingDirection.Down;
-        }
+        facingDirection = moveInput.x > 0f ? FacingDirection.Right : FacingDirection.Left;
     }
 
     Vector2 GetFacingVector()
     {
         switch (facingDirection)
         {
-            case FacingDirection.Up:
-                return Vector2.up;
-            case FacingDirection.Down:
-                return Vector2.down;
             case FacingDirection.Left:
                 return Vector2.left;
             case FacingDirection.Right:
                 return Vector2.right;
             default:
-                return Vector2.down;
+                return Vector2.right;
         }
     }
 
     bool TryGetShootDirection(out Vector2 shootDirection)
     {
-        shootDirection = Vector2.zero;
-        if (Camera.main == null) return false;
-
-        Vector2 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 toMouse = worldPos - (Vector2)transform.position;
-        if (toMouse.sqrMagnitude < 0.0001f) return false;
-
-        Vector2 candidateDirection = toMouse.normalized;
-        Vector2 facingVector = GetFacingVector();
-        float angle = Vector2.Angle(facingVector, candidateDirection);
-        if (angle > rangedAimConeAngle * 0.5f) return false;
-
-        shootDirection = candidateDirection;
+        shootDirection = GetFacingVector();
         return true;
     }
 
