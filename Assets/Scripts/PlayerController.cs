@@ -6,6 +6,8 @@ public class PlayerController : MonoBehaviour
 {
     public enum FacingDirection
     {
+        Up,
+        Down,
         Left,
         Right
     }
@@ -62,7 +64,7 @@ public class PlayerController : MonoBehaviour
     public float fistsKnockback = 1.5f;
     public TextMeshProUGUI bulletsText;
     public TextMeshProUGUI reloadText;
-    public float rangedAimConeAngle = 70f;
+    public float rangedAimConeAngle = 90f;
     public float projectileSpawnOffset = 0.45f;
     private float lastAttackTime = -Mathf.Infinity;
     private int currentAmmo = 0;
@@ -89,6 +91,17 @@ public class PlayerController : MonoBehaviour
 
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.y = Input.GetAxisRaw("Vertical");
+
+        // Restrict movement to 4 directions by keeping only the dominant axis.
+        if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
+        {
+            moveInput.y = 0f;
+        }
+        else
+        {
+            moveInput.x = 0f;
+        }
+
         moveInput = moveInput.normalized;
 
         isMoving = moveInput.magnitude > 0.1f;
@@ -331,15 +344,28 @@ public class PlayerController : MonoBehaviour
 
     void UpdateFacingDirection()
     {
-        if (Mathf.Abs(moveInput.x) < 0.01f) return;
+        if (moveInput.sqrMagnitude < 0.0001f) return;
 
-        facingDirection = moveInput.x > 0f ? FacingDirection.Right : FacingDirection.Left;
+        if (Mathf.Abs(moveInput.x) > 0.01f)
+        {
+            facingDirection = moveInput.x > 0f ? FacingDirection.Right : FacingDirection.Left;
+            return;
+        }
+
+        if (Mathf.Abs(moveInput.y) > 0.01f)
+        {
+            facingDirection = moveInput.y > 0f ? FacingDirection.Up : FacingDirection.Down;
+        }
     }
 
     Vector2 GetFacingVector()
     {
         switch (facingDirection)
         {
+            case FacingDirection.Up:
+                return Vector2.up;
+            case FacingDirection.Down:
+                return Vector2.down;
             case FacingDirection.Left:
                 return Vector2.left;
             case FacingDirection.Right:
@@ -351,7 +377,32 @@ public class PlayerController : MonoBehaviour
 
     bool TryGetShootDirection(out Vector2 shootDirection)
     {
-        shootDirection = GetFacingVector();
+        Vector2 facing = GetFacingVector();
+        Camera cam = Camera.main;
+        if (cam == null)
+        {
+            shootDirection = facing;
+            return true;
+        }
+
+        Vector2 toMouse = (Vector2)(cam.ScreenToWorldPoint(Input.mousePosition) - transform.position);
+        if (toMouse.sqrMagnitude < 0.0001f)
+        {
+            shootDirection = facing;
+            return true;
+        }
+
+        Vector2 mouseDir = toMouse.normalized;
+        float halfCone = rangedAimConeAngle * 0.5f;
+        float angleToFacing = Mathf.Abs(Vector2.SignedAngle(facing, mouseDir));
+
+        if (angleToFacing > halfCone)
+        {
+            shootDirection = Vector2.zero;
+            return false;
+        }
+
+        shootDirection = mouseDir;
         return true;
     }
 
