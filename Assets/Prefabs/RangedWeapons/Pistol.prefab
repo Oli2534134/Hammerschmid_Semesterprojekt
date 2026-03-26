@@ -109,13 +109,13 @@ MonoBehaviour:
   attackRate: 0.3
   fireCooldown: 0.2
   range: 1
-  heartRateIncrease: 2
+  heartRateIncrease: 0.5
   meleeAngle: 90
   knockback: 2
   projectilePrefab: {fileID: 4243843779626593235, guid: c1c11cb11b8a0bf4aa7d1ec57bb301df, type: 3}
   projectileSpeed: 30
   ammoType: 0
-  magazineSize: 10
+  magazineSize: 12
   reloadTime: 1.5
   smallAmmoReserve: 60
   mediumAmmoReserve: 40

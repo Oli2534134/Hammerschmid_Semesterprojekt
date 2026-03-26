@@ -45,7 +45,15 @@ public class PlayerInventory : MonoBehaviour
         if (medicalSlot == null) return;
         if (playerController == null) return;
 
-        playerController.Heal(medicalSlot.healingAmount);
+        if (medicalSlot.effectType == MedicalEffectType.Health)
+        {
+            playerController.Heal(medicalSlot.effectAmount);
+        }
+        else if (medicalSlot.effectType == MedicalEffectType.HeartRate)
+        {
+            playerController.DecreaseHeartRate(medicalSlot.effectAmount);
+        }
+        
         medicalSlot = null;
     }
 

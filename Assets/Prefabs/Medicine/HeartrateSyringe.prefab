@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5367503160784326771
+--- !u!1 &7504972339960529555
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,39 +8,39 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1422085230251231731}
-  - component: {fileID: 6789156345664744324}
-  - component: {fileID: 2465017763489480444}
-  - component: {fileID: 2083494110080480584}
+  - component: {fileID: 5353515039333422129}
+  - component: {fileID: 4322820557973331410}
+  - component: {fileID: 9192065074871978532}
+  - component: {fileID: 3628852770764124874}
   m_Layer: 0
-  m_Name: TankZombie
-  m_TagString: Enemy
+  m_Name: HeartrateSyringe
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1422085230251231731
+--- !u!4 &5353515039333422129
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5367503160784326771}
+  m_GameObject: {fileID: 7504972339960529555}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.38, y: 1.95, z: 0}
-  m_LocalScale: {x: 0.8948866, y: 0.8948866, z: 0.8948866}
+  m_LocalPosition: {x: -3.6816573, y: -0.6829793, z: 0}
+  m_LocalScale: {x: 0.56867, y: 0.56867, z: 0.56867}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &6789156345664744324
+--- !u!212 &4322820557973331410
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5367503160784326771}
+  m_GameObject: {fileID: 7504972339960529555}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -78,55 +78,60 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 2}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &2465017763489480444
+--- !u!114 &9192065074871978532
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5367503160784326771}
+  m_GameObject: {fileID: 7504972339960529555}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ffac3d6979643a469b5b3ed981d2adb, type: 3}
+  m_Script: {fileID: 11500000, guid: 466dad4ca10d249469761b0a8c847f9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  type: 2
-  health: 150
-  speed: 0.5
-  damage: 13
-  attackRange: 1
-  attackCooldown: 2
-  attackDelayAfterEnteringRange: 0.3
-  weaponPool: []
-  weaponSpawnChance: 0
-  weaponPickupPrefab: {fileID: 0}
-  heldWeaponScale: 3.5
-  randomItemDrops:
-  - pickupPrefab: {fileID: 4669629983452128836, guid: 1c8cd3640ce017648bdf3a5f8c5c8a30, type: 3}
-    dropChance: 0.508
-  - pickupPrefab: {fileID: 9192065074871978532, guid: f98c98d06feae75448835c59e8ce2c5d, type: 3}
-    dropChance: 0.497
-  ammoRewardChance: 0.4
-  minAmmoReward: 5
-  maxAmmoReward: 15
---- !u!70 &2083494110080480584
-CapsuleCollider2D:
+  itemType: 2
+  weaponType: 0
+  weaponName: 
+  weaponIcon: {fileID: 0}
+  damage: 10
+  attackRate: 1
+  fireCooldown: 0.2
+  range: 1
+  heartRateIncrease: 10
+  meleeAngle: 90
+  knockback: 2
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 10
+  ammoType: 0
+  magazineSize: 10
+  reloadTime: 1.5
+  smallAmmoReserve: 60
+  mediumAmmoReserve: 40
+  bigAmmoReserve: 20
+  medicalName: HerzschlagSpritze
+  medicalEffectType: 1
+  effectAmount: 30
+  pickupKey: 101
+  worldIconScale: 0.57
+--- !u!61 &3628852770764124874
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5367503160784326771}
+  m_GameObject: {fileID: 7504972339960529555}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -150,10 +155,19 @@ CapsuleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1, y: 2}
-  m_Direction: 0
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0

@@ -106,17 +106,23 @@ MonoBehaviour:
   weaponName: Crowbar
   weaponIcon: {fileID: 6003113951198659176, guid: 0a07f345fc74ba54ebe19ec1e4af6d3f, type: 3}
   damage: 16
-  attackRate: 1.5
-  range: 1.5
-  heartRateIncrease: 5
+  attackRate: 0.48
+  fireCooldown: 1
+  range: 1
+  heartRateIncrease: 3
   meleeAngle: 90
   knockback: 2
   projectilePrefab: {fileID: 0}
   projectileSpeed: 10
+  ammoType: 0
   magazineSize: 10
   reloadTime: 1.5
+  smallAmmoReserve: 60
+  mediumAmmoReserve: 40
+  bigAmmoReserve: 20
   medicalName: 
-  healingAmount: 25
+  medicalEffectType: 0
+  effectAmount: 25
   pickupKey: 101
   worldIconScale: 3.02
 --- !u!61 &2454040552905793417

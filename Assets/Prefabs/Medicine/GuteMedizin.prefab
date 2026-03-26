@@ -121,9 +121,10 @@ MonoBehaviour:
   mediumAmmoReserve: 40
   bigAmmoReserve: 20
   medicalName: Garlic
-  healingAmount: 41
+  medicalEffectType: 0
+  effectAmount: 25
   pickupKey: 101
-  worldIconScale: 2
+  worldIconScale: 0.7
 --- !u!58 &-6113948090964971602
 CircleCollider2D:
   m_ObjectHideFlags: 0

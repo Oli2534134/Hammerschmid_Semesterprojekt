@@ -105,16 +105,22 @@ MonoBehaviour:
   health: 70
   speed: 1
   damage: 3
-  attackRange: 1.2
-  attackCooldown: 1
+  attackRange: 1
+  attackCooldown: 2
+  attackDelayAfterEnteringRange: 0.3
   weaponPool:
   - {fileID: 504145812631756296, guid: e85f13d5a4cf81547aef2001c511020e, type: 3}
-  weaponSpawnChance: 1
+  weaponSpawnChance: 0.689
   weaponPickupPrefab: {fileID: 0}
   heldWeaponScale: 3.51
   randomItemDrops:
   - pickupPrefab: {fileID: 4669629983452128836, guid: 1c8cd3640ce017648bdf3a5f8c5c8a30, type: 3}
     dropChance: 1
+  - pickupPrefab: {fileID: 9192065074871978532, guid: f98c98d06feae75448835c59e8ce2c5d, type: 3}
+    dropChance: 1
+  ammoRewardChance: 0.4
+  minAmmoReward: 5
+  maxAmmoReward: 15
 --- !u!70 &3354190598496810936
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

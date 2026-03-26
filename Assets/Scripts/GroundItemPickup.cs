@@ -31,7 +31,8 @@ public class GroundItemPickup : MonoBehaviour
 
     [Header("Medical Properties")]
     public string medicalName = "";
-    public float healingAmount = 25f;
+    public MedicalEffectType medicalEffectType = MedicalEffectType.Health;
+    public float effectAmount = 25f;
 
     [Header("Input")]
     public KeyCode pickupKey = KeyCode.E;
@@ -191,7 +192,8 @@ public class GroundItemPickup : MonoBehaviour
     {
         var medical = new MedicalItemData();
         medical.itemName = medicalName;
-        medical.healingAmount = healingAmount;
+        medical.effectType = medicalEffectType;
+        medical.effectAmount = effectAmount;
         return medical;
     }
 

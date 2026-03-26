@@ -24,6 +24,7 @@ public class Enemy : MonoBehaviour
     public float damage;
     public float attackRange = 1.2f;
     public float attackCooldown = 1f;
+    public float attackDelayAfterEnteringRange = 1f;
 
     [Header("Weapon System")]
     public GroundItemPickup[] weaponPool;
@@ -35,10 +36,17 @@ public class Enemy : MonoBehaviour
     [Header("Random Heal Drops")]
     public RandomItemDrop[] randomItemDrops;
 
+    [Header("Ammo Reward on Kill")]
+    [Range(0f, 1f)]
+    public float ammoRewardChance = 0.4f;
+    public int minAmmoReward = 5;
+    public int maxAmmoReward = 15;
+
     private WeaponData equippedWeapon;
     private PlayerController targetPlayer;
     private float lastAttackTime = -Mathf.Infinity;
     private SpriteRenderer weaponSpriteRenderer;
+    private float timeInAttackRange = 0f;
 
     void Start()
     {
@@ -69,10 +77,15 @@ public class Enemy : MonoBehaviour
             float maxMove = distanceToPlayer - attackRange;
             float moveDistance = Mathf.Min(step, maxMove);
             transform.position = enemyPosition + direction * moveDistance;
+            timeInAttackRange = 0f;
         }
         else
         {
-            TryAttackPlayer();
+            timeInAttackRange += Time.deltaTime;
+            if (timeInAttackRange >= attackDelayAfterEnteringRange)
+            {
+                TryAttackPlayer();
+            }
         }
     }
 
@@ -128,6 +141,47 @@ public class Enemy : MonoBehaviour
     {
         health -= amount;
         Debug.Log($"Enemy took {amount} damage! Health: {health}");
+        SpawnBloodParticles();
+    }
+
+    void SpawnBloodParticles()
+    {
+        GameObject bloodObj = new GameObject("BloodParticles");
+        bloodObj.transform.position = transform.position;
+        ParticleSystem ps = bloodObj.AddComponent<ParticleSystem>();
+        
+        var main = ps.main;
+        main.startColor = new Color(0.8f, 0f, 0f); // Dark red
+        main.startLifetime = Random.Range(0.2f, 0.5f);
+        main.startSpeed = Random.Range(2f, 5f);
+        main.startSize = Random.Range(0.1f, 0.3f);
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.loop = false;
+        main.playOnAwake = true;
+        main.gravityModifier = 1f;
+
+        var emission = ps.emission;
+        emission.SetBursts(new ParticleSystem.Burst[]{ new ParticleSystem.Burst(0f, (short)Random.Range(10, 20)) });
+        emission.rateOverTime = 0f;
+
+        var shape = ps.shape;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius = 0.5f;
+
+        var colorOverLifetime = ps.colorOverLifetime;
+        colorOverLifetime.enabled = true;
+        Gradient grad = new Gradient();
+        grad.SetKeys(
+            new GradientColorKey[] { new GradientColorKey(new Color(0.8f, 0f, 0f), 0.0f), new GradientColorKey(new Color(0.5f, 0f, 0f), 1.0f) },
+            new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 0.5f), new GradientAlphaKey(0.0f, 1.0f) }
+        );
+        colorOverLifetime.color = grad;
+
+        var renderer = ps.GetComponent<ParticleSystemRenderer>();
+        renderer.material = new Material(Shader.Find("Sprites/Default"));
+        renderer.sortingOrder = 10;
+
+        Destroy(bloodObj, 1f);
     }
 
     void Die()

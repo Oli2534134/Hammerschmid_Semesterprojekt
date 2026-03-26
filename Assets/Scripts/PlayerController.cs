@@ -6,8 +6,6 @@ public class PlayerController : MonoBehaviour
 {
     public enum FacingDirection
     {
-        Up,
-        Down,
         Left,
         Right
     }
@@ -64,7 +62,13 @@ public class PlayerController : MonoBehaviour
     public float fistsKnockback = 1.5f;
     public TextMeshProUGUI bulletsText;
     public TextMeshProUGUI reloadText;
-    public float rangedAimConeAngle = 90f;
+    
+    [Header("Aim Settings")]
+    [Tooltip("The range of the aiming gizmo.")]
+    public float aimRange = 5f;
+    [Tooltip("The angle cone for aiming/shooting.")]
+    public float rangedAimConeAngle = 180f;
+    
     public float projectileSpawnOffset = 0.45f;
     private float lastAttackTime = -Mathf.Infinity;
     private int currentAmmo = 0;
@@ -91,16 +95,6 @@ public class PlayerController : MonoBehaviour
 
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.y = Input.GetAxisRaw("Vertical");
-
-        // Restrict movement to 4 directions by keeping only the dominant axis.
-        if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
-        {
-            moveInput.y = 0f;
-        }
-        else
-        {
-            moveInput.x = 0f;
-        }
 
         moveInput = moveInput.normalized;
 
@@ -184,7 +178,12 @@ public class PlayerController : MonoBehaviour
 
     public void IncreaseHeartRate(float amount)
     {
-        currentHeartRate += amount;
+        currentHeartRate = Mathf.Clamp(currentHeartRate + amount, minHeartRate, maxHeartRate);
+    }
+
+    public void DecreaseHeartRate(float amount)
+    {
+        currentHeartRate = Mathf.Clamp(currentHeartRate - amount, minHeartRate, maxHeartRate);
     }
 
     public void TakeDamage(float amount)
@@ -198,6 +197,28 @@ public class PlayerController : MonoBehaviour
         if (isDead) return;
         if (amount <= 0f) return;
         currentHeartHealth = Mathf.Clamp(currentHeartHealth + amount, 0f, maxHeartHealth);
+    }
+
+    public void AddAmmo(int amount)
+    {
+        if (amount <= 0) return;
+
+        // Wenn eine Schusswaffe ausgerüstet ist, füge die Munition direkt hinzu
+        if (equippedWeapon != null && equippedWeapon.weaponType == WeaponType.Ranged)
+        {
+            currentTotalAmmo += amount;
+            equippedWeapon.totalAmmo = currentTotalAmmo;
+            Debug.Log($"Got {amount} ammo! Total is now: {currentTotalAmmo}");
+        }
+        else 
+        {
+            // Wenn keine Schusswaffe in der Hand, checke das Inventar
+            if (inventory != null && inventory.rangedSlot != null)
+            {
+                inventory.rangedSlot.totalAmmo += amount;
+                Debug.Log($"Got {amount} ammo for stored ranged weapon! Total is now: {inventory.rangedSlot.totalAmmo}");
+            }
+        }
     }
 
     public void SetEquippedWeapon(WeaponData weapon)
@@ -349,12 +370,6 @@ public class PlayerController : MonoBehaviour
         if (Mathf.Abs(moveInput.x) > 0.01f)
         {
             facingDirection = moveInput.x > 0f ? FacingDirection.Right : FacingDirection.Left;
-            return;
-        }
-
-        if (Mathf.Abs(moveInput.y) > 0.01f)
-        {
-            facingDirection = moveInput.y > 0f ? FacingDirection.Up : FacingDirection.Down;
         }
     }
 
@@ -362,10 +377,6 @@ public class PlayerController : MonoBehaviour
     {
         switch (facingDirection)
         {
-            case FacingDirection.Up:
-                return Vector2.up;
-            case FacingDirection.Down:
-                return Vector2.down;
             case FacingDirection.Left:
                 return Vector2.left;
             case FacingDirection.Right:
@@ -459,4 +470,39 @@ public class PlayerController : MonoBehaviour
         float remaining = Mathf.Max(0f, reloadEndTime - Time.time);
         reloadText.text = $"Reloading... {remaining:F1}s";
     }
+
+#if UNITY_EDITOR
+    void OnDrawGizmosSelected()
+    {
+        Vector2 facing = GetFacingVector();
+
+        // Wenn wir im Playmode sind und die FacingDirection geupdatet wird, 
+        // nehmen wir das echte getFacingVector, ausserhalb nehmen wir standardmäßig rechts.
+        if (!Application.isPlaying) 
+        {
+            facing = Vector2.right; // Default beim Editieren
+        }
+
+        UnityEditor.Handles.color = new Color(1f, 0f, 0f, 0.2f);
+        
+        float halfCone = rangedAimConeAngle * 0.5f;
+        Vector3 playerPos = transform.position;
+
+        // Die Startrichtung ist die FacingDirection rotiert um die Hälfte des Winkels nach unten
+        Vector3 startDirection = Quaternion.Euler(0, 0, -halfCone) * (Vector3)facing;
+
+        // Zeichne den gefüllten Kreisbogen für die Zielreichweite (Aim Range) und Winkel (Angle)
+        UnityEditor.Handles.DrawSolidArc(playerPos, Vector3.forward, startDirection, rangedAimConeAngle, aimRange);
+        
+        // Zeichne einen Umriss
+        UnityEditor.Handles.color = Color.red;
+        UnityEditor.Handles.DrawWireArc(playerPos, Vector3.forward, startDirection, rangedAimConeAngle, aimRange);
+
+        // Linien zum Zentrum
+        Vector3 endDirection = Quaternion.Euler(0, 0, halfCone) * (Vector3)facing;
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(playerPos, playerPos + startDirection * aimRange);
+        Gizmos.DrawLine(playerPos, playerPos + endDirection * aimRange);
+    }
+#endif
 }
