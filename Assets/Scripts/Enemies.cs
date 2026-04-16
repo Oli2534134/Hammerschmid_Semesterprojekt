@@ -186,6 +186,15 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
+        if (targetPlayer != null)
+        {
+            PlayerAdrenaline adrenaline = targetPlayer.GetComponent<PlayerAdrenaline>();
+            if (adrenaline != null)
+            {
+                adrenaline.OnEnemyKill();
+            }
+        }
+
         TryDropRandomHealItem();
 
         if (equippedWeapon != null)

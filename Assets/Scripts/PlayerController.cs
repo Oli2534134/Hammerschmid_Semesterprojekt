@@ -134,6 +134,13 @@ public class PlayerController : MonoBehaviour
 
     void UpdateHeartRate()
     {
+        PlayerAdrenaline adrenaline = GetComponent<PlayerAdrenaline>();
+        if (adrenaline != null && adrenaline.isFrenzyActive)
+        {
+            currentHeartRate = minHeartRate; // Heart rate stays at minimum during Wahnmodus
+            return;
+        }
+
         if (isMoving)
         {
             float increase = heartRateIncrease;
@@ -148,6 +155,13 @@ public class PlayerController : MonoBehaviour
 
     void UpdateSpeedMultiplier()
     {
+        PlayerAdrenaline adrenaline = GetComponent<PlayerAdrenaline>();
+        if (adrenaline != null && adrenaline.isFrenzyActive)
+        {
+            speedMultiplier = adrenaline.speedMultiplier; // Nutze den Speed aus dem Wahnmodus
+            return;
+        }
+
         if (currentHeartRate < optimalHeartRateLow)
         {
             // Below optimal window — slow down the further below
@@ -189,6 +203,14 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(float amount)
     {
         if (isDead) return;
+
+        PlayerAdrenaline adrenaline = GetComponent<PlayerAdrenaline>();
+        if (adrenaline != null)
+        {
+            if (adrenaline.isFrenzyActive) return; // Invincible during Wahnmodus!
+            adrenaline.TakeDamage(amount); // Fügt dem Balken Adrenalin hinzu
+        }
+
         currentHeartHealth = Mathf.Clamp(currentHeartHealth - amount, 0f, maxHeartHealth);
     }
 
@@ -287,6 +309,15 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
+        PlayerAdrenaline adrenaline = GetComponent<PlayerAdrenaline>();
+        float fireCooldown = equippedWeapon.fireCooldown;
+        bool isFrenzy = (adrenaline != null && adrenaline.isFrenzyActive);
+
+        if (isFrenzy)
+        {
+            fireCooldown /= adrenaline.fireRateMultiplier; // Faster fire rate during frenzy
+        }
+
         if (equippedWeapon.weaponType == WeaponType.Ranged)
         {
             if (isReloading) return;
@@ -295,16 +326,20 @@ public class PlayerController : MonoBehaviour
             Vector2 shootDirection;
             if (!TryGetShootDirection(out shootDirection)) return;
 
-            if (Time.time - lastAttackTime < equippedWeapon.fireCooldown) return;
+            if (Time.time - lastAttackTime < fireCooldown) return;
             lastAttackTime = Time.time;
-            currentHeartRate += equippedWeapon.heartRateIncrease;
+            
+            if (!isFrenzy) currentHeartRate += equippedWeapon.heartRateIncrease;
+            
             RangedAttack(shootDirection);
             return;
         }
 
-        if (Time.time - lastAttackTime < equippedWeapon.fireCooldown) return;
+        if (Time.time - lastAttackTime < fireCooldown) return;
         lastAttackTime = Time.time;
-        currentHeartRate += equippedWeapon.heartRateIncrease;
+        
+        if (!isFrenzy) currentHeartRate += equippedWeapon.heartRateIncrease;
+        
         MeleeAttack();
     }
 
