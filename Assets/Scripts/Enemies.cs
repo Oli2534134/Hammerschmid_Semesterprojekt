@@ -48,12 +48,27 @@ public class Enemy : MonoBehaviour
     private SpriteRenderer weaponSpriteRenderer;
     private float timeInAttackRange = 0f;
 
+    public Animator animator;
+    public bool hasCrowbar;
+    private UnityEngine.Rendering.SortingGroup sortingGroup;
+
     void Start()
     {
+        animator = GetComponent<Animator>();
+        sortingGroup = GetComponent<UnityEngine.Rendering.SortingGroup>();
+        if (sortingGroup == null)
+        {
+            sortingGroup = gameObject.AddComponent<UnityEngine.Rendering.SortingGroup>();
+        }
+        
         SetupEnemy();
         targetPlayer = FindFirstObjectByType<PlayerController>();
         EquipRandomWeapon();
-
+        
+        if (animator != null)
+        {
+            animator.SetBool("hasCrowbar", hasCrowbar);
+        }
     }
 
     void Update()
@@ -64,11 +79,31 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        if (targetPlayer == null) return;
+        if (targetPlayer == null)
+        {
+            if (animator != null) animator.SetBool("isWalking", false);
+            return;
+        }
+
+        // Fix Layer-Flickering anhand der Y-Position (Y-Sorting)
+        if (sortingGroup != null)
+        {
+            sortingGroup.sortingOrder = Mathf.RoundToInt(transform.position.y * -100f);
+        }
 
         Vector2 enemyPosition = transform.position;
         Vector2 playerPosition = targetPlayer.transform.position;
         float distanceToPlayer = Vector2.Distance(enemyPosition, playerPosition);
+
+        // Gegner in Blickrichtung des Spielers spiegeln
+        if (playerPosition.x > enemyPosition.x)
+        {
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+        }
+        else if (playerPosition.x < enemyPosition.x)
+        {
+            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+        }
 
         if (distanceToPlayer > attackRange)
         {
@@ -78,9 +113,13 @@ public class Enemy : MonoBehaviour
             float moveDistance = Mathf.Min(step, maxMove);
             transform.position = enemyPosition + direction * moveDistance;
             timeInAttackRange = 0f;
+
+            if (animator != null) animator.SetBool("isWalking", true);
         }
         else
         {
+            if (animator != null) animator.SetBool("isWalking", false);
+
             timeInAttackRange += Time.deltaTime;
             if (timeInAttackRange >= attackDelayAfterEnteringRange)
             {
@@ -134,7 +173,21 @@ public class Enemy : MonoBehaviour
 
         if (Time.time - lastAttackTime < effectiveCooldown) return;
         lastAttackTime = Time.time;
+        
+        if (animator != null)
+        {
+            StartCoroutine(PunchAnimationRoutine());
+        }
+        
         targetPlayer.TakeDamage(effectiveDamage);
+    }
+
+    private System.Collections.IEnumerator PunchAnimationRoutine()
+    {
+        animator.SetBool("isPunching", true);
+        // Warte für eine halbe Sekunde (oder die Länge deiner Animation)
+        yield return new WaitForSeconds(0.5f); 
+        animator.SetBool("isPunching", false);
     }
 
     public void TakeDamage(float amount)
@@ -179,7 +232,16 @@ public class Enemy : MonoBehaviour
 
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
         renderer.material = new Material(Shader.Find("Sprites/Default"));
-        renderer.sortingOrder = 10;
+        
+        // Die Partikel sicher auf einen Layer über dem Gegner zeichnen lassen
+        if (sortingGroup != null)
+        {
+            renderer.sortingOrder = sortingGroup.sortingOrder + 10;
+        }
+        else
+        {
+            renderer.sortingOrder = 32000;
+        }
 
         Destroy(bloodObj, 1f);
     }
@@ -278,7 +340,18 @@ public class Enemy : MonoBehaviour
     void EquipRandomWeapon()
     {
         if (weaponPool == null || weaponPool.Length == 0) return;
-        if (Random.value > weaponSpawnChance) return;
+        
+        bool getsWeapon = Random.value <= weaponSpawnChance;
+        if (type == EnemyType.Melee || type == EnemyType.Ranged) // "enemy(melee and small)"
+        {
+            hasCrowbar = getsWeapon;
+            if (animator != null)
+            {
+                animator.SetBool("hasCrowbar", hasCrowbar);
+            }
+        }
+        
+        if (!getsWeapon) return;
 
         WeaponType desiredType = (type == EnemyType.Ranged) ? WeaponType.Ranged : WeaponType.Melee;
         

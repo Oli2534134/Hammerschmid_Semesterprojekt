@@ -1842,7 +1842,7 @@ MonoBehaviour:
   - {fileID: 5367503160784326771, guid: bbaeda4978ca38d4db212e9aae1c77d0, type: 3}
   minSpawnRadius: 12.3
   maxSpawnRadius: 20.6
-  enemiesInFirstWave: 4
+  enemiesInFirstWave: 2
   enemiesIncreasePerWave: 2
   spawnInterval: 0.2
   timeBetweenWaves: 5
