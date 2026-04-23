@@ -30,6 +30,9 @@ public class Enemy : MonoBehaviour
     public GroundItemPickup[] weaponPool;
     [Range(0f, 1f)]
     public float weaponSpawnChance = 0.7f;
+    [Range(0f, 1f)]
+    [Tooltip("Chance (0 bis 1), mit der die getragene Waffe beim Tod gedroppt wird.")]
+    public float weaponDropChance = 0.3f;
     public GameObject weaponPickupPrefab;
     public float heldWeaponScale = 2f;
 
@@ -51,10 +54,24 @@ public class Enemy : MonoBehaviour
     public Animator animator;
     public bool hasCrowbar;
     private UnityEngine.Rendering.SortingGroup sortingGroup;
+    private Rigidbody2D rb;
 
     void Start()
     {
         animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            rb = gameObject.AddComponent<Rigidbody2D>();
+        }
+        
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        rb.gravityScale = 0f;
+        rb.freezeRotation = true;
+        // Machen den Zombie schwer, damit der Spieler ihn nicht herumschieben kann
+        rb.mass = 200f;
+        rb.linearDamping = 0f;
+
         sortingGroup = GetComponent<UnityEngine.Rendering.SortingGroup>();
         if (sortingGroup == null)
         {
@@ -71,7 +88,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (health <= 0f)
         {
@@ -88,10 +105,10 @@ public class Enemy : MonoBehaviour
         // Fix Layer-Flickering anhand der Y-Position (Y-Sorting)
         if (sortingGroup != null)
         {
-            sortingGroup.sortingOrder = Mathf.RoundToInt(transform.position.y * -100f);
+            sortingGroup.sortingOrder = Mathf.RoundToInt(rb.position.y * -100f);
         }
 
-        Vector2 enemyPosition = transform.position;
+        Vector2 enemyPosition = rb.position;
         Vector2 playerPosition = targetPlayer.transform.position;
         float distanceToPlayer = Vector2.Distance(enemyPosition, playerPosition);
 
@@ -108,19 +125,18 @@ public class Enemy : MonoBehaviour
         if (distanceToPlayer > attackRange)
         {
             Vector2 direction = (playerPosition - enemyPosition).normalized;
-            float step = speed * Time.deltaTime;
-            float maxMove = distanceToPlayer - attackRange;
-            float moveDistance = Mathf.Min(step, maxMove);
-            transform.position = enemyPosition + direction * moveDistance;
+            rb.linearVelocity = direction * speed; // Bewegung sicher über Velocity
             timeInAttackRange = 0f;
 
             if (animator != null) animator.SetBool("isWalking", true);
         }
         else
         {
+            rb.linearVelocity = Vector2.zero; // Anhalten
+
             if (animator != null) animator.SetBool("isWalking", false);
 
-            timeInAttackRange += Time.deltaTime;
+            timeInAttackRange += Time.fixedDeltaTime;
             if (timeInAttackRange >= attackDelayAfterEnteringRange)
             {
                 TryAttackPlayer();
@@ -133,6 +149,7 @@ public class Enemy : MonoBehaviour
         float defaultHealth = health;
         float defaultSpeed = speed;
         float defaultDamage = damage;
+        float defaultAttackCooldown = attackCooldown <= 0f || attackCooldown > 5f ? 1.5f : attackCooldown;
 
         switch (type)
         {
@@ -152,12 +169,16 @@ public class Enemy : MonoBehaviour
                 defaultHealth = 200;
                 defaultSpeed = 1.5f;
                 defaultDamage = 25;
+                if (attackCooldown > 5f || attackCooldown <= 0f) defaultAttackCooldown = 4f;
                 break;
         }
 
         if (health <= 0f) health = defaultHealth;
         if (speed <= 0f) speed = defaultSpeed;
         if (damage <= 0f) damage = defaultDamage;
+        
+        // Zwinge fehlerhafte Inspector-Werte (z.B. > 5 Sekunden) auf normale Raten herunter
+        attackCooldown = defaultAttackCooldown;
     }
 
     void TryAttackPlayer()
@@ -259,7 +280,7 @@ public class Enemy : MonoBehaviour
 
         TryDropRandomHealItem();
 
-        if (equippedWeapon != null)
+        if (equippedWeapon != null && Random.value <= weaponDropChance)
         {
             GroundItemPickup pickup = CreateDropPickup();
             if (pickup != null)
@@ -278,6 +299,7 @@ public class Enemy : MonoBehaviour
                 pickup.projectileSpeed = equippedWeapon.projectileSpeed;
                 pickup.ammoType = equippedWeapon.ammoType;
                 pickup.magazineSize = equippedWeapon.magazineSize;
+                pickup.currentMagazineAmmo = equippedWeapon.currentMagazineAmmo;
                 pickup.reloadTime = equippedWeapon.reloadTime;
             }
         }

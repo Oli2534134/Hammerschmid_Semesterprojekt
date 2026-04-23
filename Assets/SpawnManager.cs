@@ -12,6 +12,15 @@ public class WaveEnemyConfig
     public List<GameObject> allowedEnemies = new List<GameObject>();
 }
 
+[System.Serializable]
+public class WaveWeaponReward
+{
+    [Tooltip("Bei welcher Wave soll die Waffe vergeben werden?")]
+    public int awardAtWave = 2;
+    [Tooltip("Welches Waffen-Prefab soll gegeben werden?")]
+    public GameObject weaponPrefabReward;
+}
+
 public class SpawnManager : MonoBehaviour
 {
     [Header("Spawn Setup")]
@@ -33,22 +42,41 @@ public class SpawnManager : MonoBehaviour
     [Tooltip("Definiere, welche Gegner ab welcher Wave spawnen. Die Config mit der höchsten startWave, die kleiner oder gleich der aktuellen Wave ist, wird verwendet.")]
     public List<WaveEnemyConfig> waveConfigs = new List<WaveEnemyConfig>();
 
+    [Header("Wave Rewards")]
+    [Tooltip("Belohnungen (Waffen), die der Spieler zu Beginn bestimmter Waves ins Inventar bekommt.")]
+    public List<WaveWeaponReward> weaponRewards = new List<WaveWeaponReward>();
+
     [Header("UI")]
     public TMP_Text remainingEnemiesText;
     public TMP_Text currentWaveText;
+    [Tooltip("Text-Element, das anzeigt, welche Waffe man bekommen hat.")]
+    public TMP_Text weaponRewardText;
+    [Tooltip("Wie lange der Belohnungstext angezeigt werden soll.")]
+    public float rewardTextDuration = 3f;
 
     private readonly List<GameObject> aliveEnemies = new List<GameObject>();
     private int currentWave = 0;
+    private PlayerInventory playerInventory;
 
     void Start()
     {
+        if (weaponRewardText != null)
+        {
+            weaponRewardText.gameObject.SetActive(false);
+        }
+
         if (playerTransform == null)
         {
             PlayerController player = FindFirstObjectByType<PlayerController>();
             if (player != null)
             {
                 playerTransform = player.transform;
+                playerInventory = player.GetComponent<PlayerInventory>();
             }
+        }
+        else
+        {
+            playerInventory = playerTransform.GetComponent<PlayerInventory>();
         }
 
         StartCoroutine(WaveLoop());
@@ -59,6 +87,8 @@ public class SpawnManager : MonoBehaviour
         while (true)
         {
             currentWave++;
+
+            GiveWaveRewards(currentWave);
 
             if (!HasEnemiesForWave(currentWave))
             {
@@ -103,6 +133,42 @@ public class SpawnManager : MonoBehaviour
         Vector3 spawnPosition = GetRandomSpawnPosition();
         GameObject enemyInstance = Instantiate(prefab, spawnPosition, Quaternion.identity);
         aliveEnemies.Add(enemyInstance);
+    }
+
+    void GiveWaveRewards(int waveIndex)
+    {
+        if (playerInventory == null) return;
+
+        foreach (var reward in weaponRewards)
+        {
+            if (reward.awardAtWave == waveIndex && reward.weaponPrefabReward != null)
+            {
+                GroundItemPickup pickup = reward.weaponPrefabReward.GetComponent<GroundItemPickup>();
+                if (pickup != null && pickup.itemType == GroundItemPickup.ItemType.Weapon)
+                {
+                    WeaponData newWeaponData = pickup.CreateWeaponData();
+                    playerInventory.AddWeapon(newWeaponData);
+                    Debug.Log($"Belohnung für Wave {waveIndex}: {newWeaponData.weaponName} ins Inventar hinzugefügt!");
+                    
+                    if (weaponRewardText != null)
+                    {
+                        StartCoroutine(ShowRewardTextRoutine($"Neue Waffe erhalten: {newWeaponData.weaponName}!"));
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"SpawnManager: Das hinterlegte Prefab für Wave {waveIndex} hat kein GroundItemPickup-Script oder ist keine Waffe!");
+                }
+            }
+        }
+    }
+
+    IEnumerator ShowRewardTextRoutine(string message)
+    {
+        weaponRewardText.text = message;
+        weaponRewardText.gameObject.SetActive(true);
+        yield return new WaitForSeconds(rewardTextDuration);
+        weaponRewardText.gameObject.SetActive(false);
     }
 
     bool HasEnemiesForWave(int waveIndex)

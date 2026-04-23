@@ -212,6 +212,53 @@ public class PlayerController : MonoBehaviour
         }
 
         currentHeartHealth = Mathf.Clamp(currentHeartHealth - amount, 0f, maxHeartHealth);
+        SpawnDamageParticles();
+    }
+
+    void SpawnDamageParticles()
+    {
+        GameObject particlesObj = new GameObject("PlayerDamageParticles");
+        particlesObj.transform.position = transform.position;
+        ParticleSystem ps = particlesObj.AddComponent<ParticleSystem>();
+        
+        var main = ps.main;
+        // Grüne Partikel, aber kleiner
+        main.startColor = new Color(0f, 0.8f, 0.2f); 
+        main.startLifetime = Random.Range(0.2f, 0.4f);
+        main.startSpeed = Random.Range(1.5f, 3.5f);
+        main.startSize = Random.Range(0.05f, 0.15f); // Kleiner als beim Enemey (0.1 bis 0.3)
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.loop = false;
+        main.playOnAwake = true;
+        main.gravityModifier = 1f;
+
+        var emission = ps.emission;
+        emission.SetBursts(new ParticleSystem.Burst[]{ new ParticleSystem.Burst(0f, (short)Random.Range(8, 15)) });
+        emission.rateOverTime = 0f;
+
+        var shape = ps.shape;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius = 0.3f;
+
+        var colorOverLifetime = ps.colorOverLifetime;
+        colorOverLifetime.enabled = true;
+        Gradient grad = new Gradient();
+        grad.SetKeys(
+            new GradientColorKey[] { new GradientColorKey(new Color(0f, 0.8f, 0.2f), 0.0f), new GradientColorKey(new Color(0f, 0.4f, 0.1f), 1.0f) },
+            new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(1.0f, 0.5f), new GradientAlphaKey(0.0f, 1.0f) }
+        );
+        colorOverLifetime.color = grad;
+
+        var renderer = ps.GetComponent<ParticleSystemRenderer>();
+        renderer.material = new Material(Shader.Find("Sprites/Default"));
+        
+        SpriteRenderer playerRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (playerRenderer != null)
+        {
+            renderer.sortingOrder = playerRenderer.sortingOrder + 10;
+        }
+
+        Destroy(particlesObj, 1.0f);
     }
 
     public void Heal(float amount)
@@ -245,13 +292,20 @@ public class PlayerController : MonoBehaviour
 
     public void SetEquippedWeapon(WeaponData weapon)
     {
-        if (equippedWeapon != null)
+        if (equippedWeapon != null && equippedWeapon.weaponType == WeaponType.Ranged)
+        {
             equippedWeapon.totalAmmo = currentTotalAmmo;
+            equippedWeapon.currentMagazineAmmo = currentAmmo;
+        }
 
         equippedWeapon = weapon;
         if (equippedWeapon != null && equippedWeapon.weaponType == WeaponType.Ranged)
         {
-            currentAmmo = equippedWeapon.magazineSize;
+            if (equippedWeapon.currentMagazineAmmo == -1)
+            {
+                equippedWeapon.currentMagazineAmmo = equippedWeapon.magazineSize;
+            }
+            currentAmmo = equippedWeapon.currentMagazineAmmo;
             currentTotalAmmo = equippedWeapon.totalAmmo;
             isReloading = false;
         }

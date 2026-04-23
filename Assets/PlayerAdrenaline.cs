@@ -9,6 +9,18 @@ public class PlayerAdrenaline : MonoBehaviour
     public float decreaseRate = 3f;
     public float delayBeforeDecrease = 3f;
 
+    [Header("Adrenaline Gains")]
+    [Tooltip("Adrenalin, das man beim Töten eines Gegners bekommt.")]
+    public float adrenalinePerKill = 20f;
+    [Tooltip("Adrenalin-Multiplikator für erlittenen Schaden (Schaden * Multiplikator).")]
+    public float adrenalineDamageMultiplier = 1f;
+    [Tooltip("Minimum Adrenalin pro Treffer.")]
+    public float minAdrenalineFromDamage = 5f;
+    [Tooltip("Maximum Adrenalin pro Treffer.")]
+    public float maxAdrenalineFromDamage = 25f;
+    [Tooltip("Adrenalin, das man beim Drücken der Leertaste (Debug) bekommt.")]
+    public float adrenalineOnSpaceBar = 20f;
+
     [Header("UI")]
     public Slider adrenalineSlider;
 
@@ -38,7 +50,7 @@ public class PlayerAdrenaline : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            AddAdrenaline(20f);
+            AddAdrenaline(adrenalineOnSpaceBar);
             Debug.Log("Leertaste gedrückt! Adrenalin jetzt: " + currentAdrenaline);
         }
 
@@ -140,7 +152,9 @@ public class PlayerAdrenaline : MonoBehaviour
     {
         if (isFrenzyActive || _isOnCooldown) return;
 
-        float clampedAdrenaline = Mathf.Clamp(damageAmount, 5f, 25f);
+        float calculatedAdrenaline = damageAmount * adrenalineDamageMultiplier;
+        float clampedAdrenaline = Mathf.Clamp(calculatedAdrenaline, minAdrenalineFromDamage, maxAdrenalineFromDamage);
+        
         Debug.Log("Spieler nimmt Schaden! Adrenalin wird erhöht um: " + clampedAdrenaline);
 
         AddAdrenaline(clampedAdrenaline); 
@@ -148,6 +162,6 @@ public class PlayerAdrenaline : MonoBehaviour
 
     public void OnEnemyKill()
     {
-        AddAdrenaline(20f); 
+        AddAdrenaline(adrenalinePerKill); 
     }
 }

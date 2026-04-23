@@ -22,6 +22,7 @@ public class GroundItemPickup : MonoBehaviour
     public float projectileSpeed = 10f;
     public AmmoType ammoType = AmmoType.Small;
     public int magazineSize = 10;
+    public int currentMagazineAmmo = -1;
     public float reloadTime = 1.5f;
 
     [Header("Ammo Reserves")]
@@ -132,7 +133,7 @@ public class GroundItemPickup : MonoBehaviour
         }
     }
 
-    WeaponData CreateWeaponData()
+    public WeaponData CreateWeaponData()
     {
         var weapon = new WeaponData();
         weapon.weaponName = weaponName;
@@ -149,6 +150,7 @@ public class GroundItemPickup : MonoBehaviour
         weapon.projectileSpeed = projectileSpeed;
         weapon.ammoType = ammoType;
         weapon.magazineSize = magazineSize;
+        weapon.currentMagazineAmmo = currentMagazineAmmo;
         weapon.reloadTime = reloadTime;
         switch (ammoType)
         {
@@ -178,6 +180,7 @@ public class GroundItemPickup : MonoBehaviour
         projectileSpeed = weapon.projectileSpeed;
         ammoType = weapon.ammoType;
         magazineSize = weapon.magazineSize;
+        currentMagazineAmmo = weapon.currentMagazineAmmo;
         reloadTime = weapon.reloadTime;
         switch (weapon.ammoType)
         {

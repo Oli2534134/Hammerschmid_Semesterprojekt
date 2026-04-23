@@ -102,14 +102,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 2
-  health: 150
-  speed: 0.5
+  health: 67
+  speed: 0.8
   damage: 13
-  attackRange: 1
-  attackCooldown: 2
-  attackDelayAfterEnteringRange: 0.3
+  attackRange: 1.2
+  attackCooldown: 2.3
+  attackDelayAfterEnteringRange: 0.8
   weaponPool: []
   weaponSpawnChance: 0
+  weaponDropChance: 1
   weaponPickupPrefab: {fileID: 0}
   heldWeaponScale: 3.5
   randomItemDrops:
@@ -120,6 +121,8 @@ MonoBehaviour:
   ammoRewardChance: 0.4
   minAmmoReward: 5
   maxAmmoReward: 15
+  animator: {fileID: 0}
+  hasCrowbar: 0
 --- !u!70 &2083494110080480584
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

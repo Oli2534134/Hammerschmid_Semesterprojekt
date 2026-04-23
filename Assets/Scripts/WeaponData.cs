@@ -29,6 +29,7 @@ public class WeaponData
     public float projectileSpeed = 10f;
     public AmmoType ammoType = AmmoType.Small;
     public int magazineSize = 10;
+    public int currentMagazineAmmo = -1;
     public float reloadTime = 1.5f;
     public int totalAmmo = 30;
 }
