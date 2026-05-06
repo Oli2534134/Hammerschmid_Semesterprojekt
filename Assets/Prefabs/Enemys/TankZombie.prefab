@@ -102,12 +102,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: 2
-  health: 67
+  health: 55
   speed: 0.8
-  damage: 13
-  attackRange: 1.2
-  attackCooldown: 2.3
-  attackDelayAfterEnteringRange: 0.8
+  damage: 18
+  attackRange: 1.5
+  attackCooldown: 3
+  attackDelayAfterEnteringRange: 0.5
   weaponPool: []
   weaponSpawnChance: 0
   weaponDropChance: 1
@@ -115,9 +115,9 @@ MonoBehaviour:
   heldWeaponScale: 3.5
   randomItemDrops:
   - pickupPrefab: {fileID: 4669629983452128836, guid: 1c8cd3640ce017648bdf3a5f8c5c8a30, type: 3}
-    dropChance: 0.508
+    dropChance: 0.341
   - pickupPrefab: {fileID: 9192065074871978532, guid: f98c98d06feae75448835c59e8ce2c5d, type: 3}
-    dropChance: 0.497
+    dropChance: 0.234
   ammoRewardChance: 0.4
   minAmmoReward: 5
   maxAmmoReward: 15

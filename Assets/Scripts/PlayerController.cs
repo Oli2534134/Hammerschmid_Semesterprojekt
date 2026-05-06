@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour
     public float currentHeartRate;
 
     private Rigidbody2D rb;
+    private Animator animator;
     private Vector2 moveInput;
     private bool isDead = false;
     private bool isMoving = false;
@@ -83,6 +84,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponentInChildren<Animator>();
+        if (animator == null) animator = GetComponent<Animator>();
         currentHeartRate = restingHeartRate;
         currentHeartHealth = Mathf.Clamp(currentHeartHealth, 0f, maxHeartHealth);
         inventory = GetComponent<PlayerInventory>();
@@ -100,6 +103,12 @@ public class PlayerController : MonoBehaviour
 
         isMoving = moveInput.magnitude > 0.1f;
         isSprinting = isMoving && Input.GetKey(KeyCode.LeftShift);
+
+        if (animator != null)
+        {
+            animator.SetBool("IsRunning", isMoving);
+        }
+
         UpdateFacingDirection();
         HandleReloadTimer();
 
@@ -338,9 +347,16 @@ public class PlayerController : MonoBehaviour
             StartReload();
         }
 
-            if (Input.GetMouseButton(0))
+        bool isAttacking = Input.GetMouseButton(0);
+        if (isAttacking)
         {
             Attack();
+        }
+
+        if (animator != null)
+        {
+            bool canShoot = equippedWeapon.weaponType == WeaponType.Ranged && currentAmmo > 0 && !isReloading;
+            animator.SetBool("isShooting", isAttacking && canShoot);
         }
     }
 
@@ -452,13 +468,27 @@ public class PlayerController : MonoBehaviour
         Debug.Log($"Ranged attack! Projectile fired toward {shootDirection}");
     }
 
+    void SetFacingDirection(FacingDirection newFacingDirection)
+    {
+        if (newFacingDirection != facingDirection)
+        {
+            facingDirection = newFacingDirection;
+            
+            // Flip the player's scale horizontally
+            Vector3 scale = transform.localScale;
+            scale.x = (facingDirection == FacingDirection.Right ? 1f : -1f) * Mathf.Abs(scale.x);
+            transform.localScale = scale;
+        }
+    }
+
     void UpdateFacingDirection()
     {
         if (moveInput.sqrMagnitude < 0.0001f) return;
 
         if (Mathf.Abs(moveInput.x) > 0.01f)
         {
-            facingDirection = moveInput.x > 0f ? FacingDirection.Right : FacingDirection.Left;
+            FacingDirection newFacingDirection = moveInput.x > 0f ? FacingDirection.Right : FacingDirection.Left;
+            SetFacingDirection(newFacingDirection);
         }
     }
 
@@ -498,8 +528,12 @@ public class PlayerController : MonoBehaviour
 
         if (angleToFacing > halfCone)
         {
-            shootDirection = Vector2.zero;
-            return false;
+            // Wenn man außerhalb des Kegels zielt, drehen wir den Spieler einfach automatisch um.
+            SetFacingDirection(mouseDir.x > 0 ? FacingDirection.Right : FacingDirection.Left);
+            
+            // Jetzt setzen wir die Schussrichtung, da der Spieler sich gedreht hat
+            shootDirection = mouseDir;
+            return true;
         }
 
         shootDirection = mouseDir;

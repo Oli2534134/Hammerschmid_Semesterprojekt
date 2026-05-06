@@ -218,11 +218,27 @@ public class SpawnManager : MonoBehaviour
         float minRadius = Mathf.Max(0f, minSpawnRadius);
         float maxRadius = Mathf.Max(minRadius, maxSpawnRadius);
 
-        float angle = Random.Range(0f, Mathf.PI * 2f);
-        float distance = Random.Range(minRadius, maxRadius);
-        Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+        for (int i = 0; i < 30; i++) // Try up to 30 times
+        {
+            float angle = Random.Range(0f, Mathf.PI * 2f);
+            float distance = Random.Range(minRadius, maxRadius);
+            Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+            Vector3 candidatePos = center + new Vector3(offset.x, offset.y, 0f);
 
-        return center + new Vector3(offset.x, offset.y, 0f);
+            // Check if the position is clear of solid obstacles (using default physics layers)
+            // Adjust the radius (e.g., 0.5f) to roughly match the size of your enemies
+            Collider2D col = Physics2D.OverlapCircle(candidatePos, 0.5f);
+            
+            // If we don't hit anything, or if we hit a trigger (which isn't a solid building), it's probably fine.
+            if (col == null || col.isTrigger || col.CompareTag("Player") || col.CompareTag("Enemy"))
+            {
+                return candidatePos;
+            }
+        }
+
+        // Fallback if no valid position was found after 30 tries
+        float finalAngle = Random.Range(0f, Mathf.PI * 2f);
+        return center + new Vector3(Mathf.Cos(finalAngle), Mathf.Sin(finalAngle), 0f) * maxRadius;
     }
 
     int GetAliveEnemyCount()

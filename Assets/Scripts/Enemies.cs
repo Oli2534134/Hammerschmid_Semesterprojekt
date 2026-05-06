@@ -105,7 +105,9 @@ public class Enemy : MonoBehaviour
         // Fix Layer-Flickering anhand der Y-Position (Y-Sorting)
         if (sortingGroup != null)
         {
-            sortingGroup.sortingOrder = Mathf.RoundToInt(rb.position.y * -100f);
+            // Adding 10000 ensures it stays above the default background layer (Order 0)
+            // while still correctly sorting against other objects.
+            sortingGroup.sortingOrder = 10000 + Mathf.RoundToInt(rb.position.y * -100f);
         }
 
         Vector2 enemyPosition = rb.position;
@@ -125,14 +127,52 @@ public class Enemy : MonoBehaviour
         if (distanceToPlayer > attackRange)
         {
             Vector2 direction = (playerPosition - enemyPosition).normalized;
-            rb.linearVelocity = direction * speed; // Bewegung sicher über Velocity
+
+            // Simple Obstacle Avoidance (Raycasts to avoid getting stuck on buildings)
+            float rayDistance = 1.0f;
+            
+            // Only hit obstacles that are NOT triggers and NOT the enemy itself
+            RaycastHit2D hitCenter = Physics2D.Raycast(enemyPosition, direction, rayDistance);
+            
+            bool isBlocked = hitCenter.collider != null && 
+                             !hitCenter.collider.isTrigger && 
+                             hitCenter.collider.gameObject != gameObject &&
+                             !hitCenter.collider.CompareTag("Player") && 
+                             !hitCenter.collider.CompareTag("Enemy");
+
+            if (isBlocked)
+            {
+                // We are driving into an obstacle. Find a clear path by checking left/right angles.
+                Vector2 leftDir = Quaternion.Euler(0, 0, 45) * direction;
+                Vector2 rightDir = Quaternion.Euler(0, 0, -45) * direction;
+
+                RaycastHit2D hitLeft = Physics2D.Raycast(enemyPosition, leftDir, rayDistance);
+                bool leftBlocked = hitLeft.collider != null && !hitLeft.collider.isTrigger && hitLeft.collider.gameObject != gameObject && !hitLeft.collider.CompareTag("Player") && !hitLeft.collider.CompareTag("Enemy");
+
+                RaycastHit2D hitRight = Physics2D.Raycast(enemyPosition, rightDir, rayDistance);
+                bool rightBlocked = hitRight.collider != null && !hitRight.collider.isTrigger && hitRight.collider.gameObject != gameObject && !hitRight.collider.CompareTag("Player") && !hitRight.collider.CompareTag("Enemy");
+
+                if (!leftBlocked)
+                    direction = leftDir.normalized;
+                else if (!rightBlocked)
+                    direction = rightDir.normalized;
+                else
+                {
+                    // Both blocked, keep spinning to find a way (e.g. 90 degrees)
+                    direction = Quaternion.Euler(0, 0, 90) * direction;
+                }
+            }
+
+            // Sanftes Beschleunigen für einen leichten Slide-Effekt am Boden
+            rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, direction * speed, Time.fixedDeltaTime * 8f);
             timeInAttackRange = 0f;
 
             if (animator != null) animator.SetBool("isWalking", true);
         }
         else
         {
-            rb.linearVelocity = Vector2.zero; // Anhalten
+            // Sanftes Abbremsen (Sliding beim Anhalten)
+            rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * 8f);
 
             if (animator != null) animator.SetBool("isWalking", false);
 

@@ -107,6 +107,12 @@ public class PlayerAdrenaline : MonoBehaviour
         currentAdrenaline = 0f;
         UpdateUI();
 
+        PlayerController player = GetComponent<PlayerController>();
+        if (player != null)
+        {
+            player.Heal(10f);
+        }
+
         ApplyFrenzyEffects(true);
         Debug.Log("Wahnmodus Aktiviert!");
     }

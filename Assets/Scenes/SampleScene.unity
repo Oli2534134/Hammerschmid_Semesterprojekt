@@ -50906,6 +50906,7 @@ GameObject:
   - component: {fileID: 1578972912}
   - component: {fileID: 1578972919}
   - component: {fileID: 1578972920}
+  - component: {fileID: 1578972921}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -51030,6 +51031,9 @@ MonoBehaviour:
   aimRange: 5
   rangedAimConeAngle: 180
   projectileSpawnOffset: 0.45
+  miniJumpInterval: 3
+  miniJumpHeight: 0.5
+  miniJumpDuration: 0.3
 --- !u!212 &1578972917
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -51074,7 +51078,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
+  m_Sprite: {fileID: 4354437699790838058, guid: 59b329ebcbf00a44fb68a59981ca7ca2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -51140,6 +51144,28 @@ MonoBehaviour:
   isFrenzyActive: 0
   speedMultiplier: 1.5
   fireRateMultiplier: 1.5
+--- !u!95 &1578972921
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1578972911}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 86806e97714642a4e899e6e69df6ab7e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1865973039
 GameObject:
   m_ObjectHideFlags: 0
@@ -51176,9 +51202,9 @@ MonoBehaviour:
   minSpawnRadius: 12.3
   maxSpawnRadius: 20.6
   enemiesInFirstWave: 3
-  enemiesIncreasePerWave: 3
+  enemiesIncreasePerWave: 4
   spawnInterval: 0.2
-  timeBetweenWaves: 5
+  timeBetweenWaves: 4
   waveConfigs:
   - startWave: 1
     allowedEnemies:
